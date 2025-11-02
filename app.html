@@ -68,7 +68,15 @@ function like(i){ const items=read(); items[i].likes=(items[i].likes||0)+1; writ
 function del(i){ const items=read(); items.splice(i,1); write(items); }
 $composer.addEventListener('submit', e=>{e.preventDefault(); const txt=$content.value.trim(); if(!txt) return; const items=read(); items.unshift({text:txt, ts:Date.now(), likes:0}); write(items); $content.value='';});
 render();
+<hr/>
+<div class="csc-export">
+  <button class="button" data-export>Télécharger mes données (.json)</button>
+  <input type="file" data-import-file accept="application/json" hidden/>
+  <button class="button" data-import>Importer des données (.json)</button>
+  <p class="meta">Démo — export local uniquement (aucune collecte serveur).</p>
+</div>
 </script>
 <script defer src="./js/cta.js"></script>
 <script defer src="./js/profile.js"></script>
+<script defer src="./js/export.js"></script>
 </body></html>
