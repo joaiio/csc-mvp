@@ -1,15 +1,195 @@
-<!doctype html><html lang="fr"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width"/>
-<title>Page en préparation — 6G</title>
-<link rel="stylesheet" href="./styles.css"/>
-</head><body>
+<!doctype html><html lang="fr">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width"/>
+  <title>Blog — Charlott’ Street Club</title>
+  <link rel="stylesheet" href="./styles.css"/>
+  <style>
+    /* === Styles spécifiques au blog (isolés, non intrusifs) === */
+    .hidden{display:none !important;}
+
+    .cats-grid{
+      display:grid; gap:16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin: 12px 0 20px;
+    }
+    .cat-card{
+      position:relative; overflow:hidden; cursor:pointer;
+      border-radius:20px; border:1px solid rgba(255,255,255,.08);
+      padding:22px; min-height:140px; text-align:left; color:#fff;
+      box-shadow: var(--shadow, 0 10px 30px rgba(0,0,0,.35));
+      transform: translateY(0); transition: transform .15s ease, box-shadow .2s ease;
+      background: linear-gradient(135deg,#1c1c1c,#0e0e0e);
+    }
+    .cat-card .emoji{ font-size:42px; display:block; opacity:.95; }
+    .cat-card .title{ margin-top:8px; font-weight:900; font-size:1.12rem; letter-spacing:.3px; }
+    .cat-card:hover{ transform: translateY(-3px); box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+
+    /* Variantes palette CSC */
+    .cat--journal  { background: linear-gradient(135deg,#6E40FF,#00E0FF); }
+    .cat--justice  { background: linear-gradient(135deg,#FF8A00,#FFD465); color:#111; }
+    .cat--entraide { background: linear-gradient(135deg,#2E7D6B,#63A46A); }
+    .cat--infos    { background: linear-gradient(135deg,#7E1F2E,#D14D72); }
+    .cat--ia       { background: linear-gradient(135deg,#00E0FF,#6E40FF); }
+    .cat--art      { background: linear-gradient(135deg,#D14D72,#FF8A00); }
+
+    .post-view .cover{ width:100%; height:auto; border-radius:12px; margin:.6rem 0; }
+    .back-link{ display:inline-block; margin:.2rem 0 .6rem; }
+
+    .toolbar{ display:flex; flex-wrap:wrap; gap:.8rem; align-items:center; justify-content:space-between; margin: .5rem 0 1rem; }
+    .search{ display:flex; gap:.5rem; align-items:center; }
+    .search input{ border:1px solid rgba(255,255,255,.35); padding:.5rem .7rem; border-radius:.6rem; min-width:260px; }
+    .button.is-saved{ border-color:#2E7D6B; color:#2E7D6B; }
+  </style>
+</head>
+<body>
 <header class="topbar"><nav class="topbar-nav">
   <div class="brand"><img src="./assets/logo-hero.png" alt="Logo CSC"/><span>Charlott’ Street Club</span></div>
-  <a class="nav" href="./index.html">Accueil</a><a class="nav" href="./app.html">/app</a>
+  <a class="nav" href="./index.html">Accueil</a>
+  <a class="nav" href="./app.html">/app</a>
+  <a class="nav" href="./segments.html">/segments</a>
+  <a class="nav" href="./media-kit.html">/media-kit</a>
+  <a class="nav" href="./partenaires.html">/partenaires</a>
+  <a class="nav" href="./associations.html">/associations</a>
+  <span style="flex:1"></span>
+  <a class="nav is-cta" href="./app.html">Rejoindre l’Agora</a>
 </nav></header>
-<main class="container card">
-<h2>Page en préparation</h2>
-<p class="meta">Cette section sera activée après le RDV (intégrations, formulaires, data).</p>
-<p class="meta">Prototype — aucune donnée collectée</p>
+
+<main class="container">
+  <h1>Blog — Rubriques</h1>
+  <p class="meta">Prototype 100% client-side (aucune collecte). D’abord les rubriques, puis les articles, puis la lecture.</p>
+
+  <!-- 1) grille des rubriques -->
+  <section id="cat-grid" class="cats-grid" aria-label="Rubriques"></section>
+
+  <!-- 2) section liste + lecture -->
+  <section id="post-section" class="hidden" aria-live="polite">
+    <div class="toolbar">
+      <a id="back" class="button ghost" href="#">← Rubriques</a>
+      <span class="brand" id="current-cat" style="opacity:.9"></span>
+      <span style="flex:1"></span>
+      <div class="search">
+        <input id="q" placeholder="Rechercher…" aria-label="Recherche"/>
+        <button id="btn-favs" class="button outline" type="button">Mes favoris</button>
+        <span class="badge" id="count">0 posts</span>
+      </div>
+    </div>
+
+    <div id="post-grid" class="grid"></div>
+    <article id="post-view" class="post-view hidden"></article>
+  </section>
 </main>
+
+<script>
+/* === Données embarquées (on évite tout 404 ce soir) === */
+const BLOG_DATA = {
+  categories: [
+    {id:"journal",  name:"Journal de Charlott Street", emoji:"📓"},
+    {id:"justice",  name:"Espace Justice citoyenne",   emoji:"⚖️"},
+    {id:"entraide", name:"Solidarité & entraide",       emoji:"🤝"},
+    {id:"infos",    name:"Infos indépendantes",         emoji:"🗞️"},
+    {id:"ia",       name:"Intelligence artificielle",   emoji:"🤖"},
+    {id:"art",      name:"Art libre",                   emoji:"🎨"}
+  ],
+  posts: [
+    {slug:"journal-001-on-reconstruit", title:"On reconstruit.", excerpt:"Pourquoi ce journal, notre méthode et vos rôles.", date:"2025-11-02", author:"CSC", category:"journal", tags:["annonce","roadmap"], cover:"./assets/cover_journal.png", body:"<p>Bienvenue dans le journal du projet. Ici on documente tout&nbsp;: choix, doutes, tests, victoires. Notre boussole&nbsp;: sobriété, souveraineté, solidarité. Rejoins l’Agora pour participer.</p>"},
+    {slug:"justice-plainte-collective-modele", title:"Plainte collective&nbsp;: modèle simple", excerpt:"Un modèle pour signaler une atteinte aux droits.", date:"2025-10-30", author:"CSC - Justice", category:"justice", tags:["recours","droits"], cover:"./assets/cover_justice.png", body:"<p>Modèle court à adapter&nbsp;: faits, droit applicable, demande. À venir en version PDF signable.</p>"},
+    {slug:"entraide-carte-points-accueil", title:"Carte des points d’accueil (béta)", excerpt:"Une carto légère pour s’orienter localement.", date:"2025-10-28", author:"CSC - Entraide", category:"entraide", tags:["terrain","carto"], cover:"./assets/cover_entraide.png", body:"<p>Première itération de la cartographie. Contribue via l’Agora&nbsp;: ajoute ton point d’aide.</p>"},
+    {slug:"infos-recap-hebdo", title:"Récap’ hebdo — indépendances", excerpt:"Sélection d’articles et ressources non-alignées.", date:"2025-10-27", author:"CSC - Infos", category:"infos", tags:["veille","analyse"], cover:"./assets/cover_infos.png", body:"<ul><li>Dossier A&nbsp;: état social</li><li>Étude B&nbsp;: non-recours</li><li>Carte C&nbsp;: services publics</li></ul>"},
+    {slug:"ia-guichet-lilia-frugale", title:"Guichet « LilIA » frugale", excerpt:"Un compagnon IA sobre, local, utile.", date:"2025-10-26", author:"CSC - IA", category:"ia", tags:["ia","frugal"], cover:"./assets/cover_ia.png", body:"<p>Conception d’un agent très focalisé (RSA, logement, non-recours) avec traçabilité et minimisation des données.</p>"},
+    {slug:"art-libre-affiches-70s", title:"Affiches libres (style 70’s)", excerpt:"Un kit d’affiches réutilisables.", date:"2025-10-25", author:"CSC - Studio", category:"art", tags:["affiches","assets"], cover:"./assets/cover_art.png", body:"<p>Télécharge, imprime, colle&nbsp;: des visuels libres sous licence Creative Commons. QR vers le manifeste.</p>"}
+  ]
+};
+
+/* === Script (autonome) === */
+const state = { data: BLOG_DATA, favs: new Set(JSON.parse(localStorage.getItem('csc_blog_favs_v1')||'[]')), cat:null, q:'', showFavs:false };
+const els = { catGrid:null, postSection:null, postGrid:null, postView:null, back:null, q:null, btnFavs:null, count:null, currentCat:null };
+function saveFavs(){ localStorage.setItem('csc_blog_favs_v1', JSON.stringify([...state.favs])); }
+function $(s){ return document.querySelector(s); }
+
+function init(){
+  els.catGrid=$('#cat-grid'); els.postSection=$('#post-section'); els.postGrid=$('#post-grid'); els.postView=$('#post-view');
+  els.back=$('#back'); els.q=$('#q'); els.btnFavs=$('#btn-favs'); els.count=$('#count'); els.currentCat=$('#current-cat');
+
+  renderCats();
+  els.back.addEventListener('click', e=>{ e.preventDefault(); goHome(); });
+  els.q.addEventListener('input', e=>{ state.q=e.target.value.trim().toLowerCase(); renderPosts(); });
+  els.btnFavs.addEventListener('click', ()=>{ state.showFavs=!state.showFavs; renderPosts(); });
+
+  const slug = new URLSearchParams(location.search).get('p');
+  if(slug){
+    const p = state.data.posts.find(x=>x.slug===slug);
+    if(p){ state.cat=p.category; showListFor(state.cat); renderPosts(); showPost(p); }
+  }
+}
+
+function goHome(){
+  state.cat=null; state.q=''; state.showFavs=false;
+  els.q.value=''; els.btnFavs.classList.remove('primary');
+  els.postSection.classList.add('hidden'); els.postView.classList.add('hidden'); els.postGrid.classList.remove('hidden'); els.catGrid.classList.remove('hidden');
+}
+
+function renderCats(){
+  els.catGrid.innerHTML = state.data.categories.map(c=>`
+    <button class="cat-card cat--${c.id}" data-id="${c.id}">
+      <span class="emoji">${c.emoji||''}</span>
+      <span class="title">${c.name}</span>
+    </button>`).join('');
+  els.catGrid.querySelectorAll('.cat-card').forEach(b=>b.addEventListener('click', ()=>{ showListFor(b.dataset.id); renderPosts(); }));
+}
+
+function showListFor(catId){
+  state.cat=catId;
+  const catName = state.data.categories.find(x=>x.id===catId)?.name||'Tous';
+  els.currentCat.textContent=catName;
+  els.catGrid.classList.add('hidden'); els.postSection.classList.remove('hidden'); els.postView.classList.add('hidden'); els.postGrid.classList.remove('hidden');
+  state.q=''; els.q.value=''; state.showFavs=false; els.btnFavs.classList.remove('primary');
+}
+
+function renderPosts(){
+  const posts = state.data.posts
+    .filter(p=>!state.cat||p.category===state.cat)
+    .filter(p=>state.showFavs?state.favs.has(p.slug):true)
+    .filter(p=>{ if(!state.q) return true; const hay=(p.title+' '+p.excerpt+' '+(p.tags||[]).join(' ')).toLowerCase(); return hay.includes(state.q); })
+    .sort((a,b)=>a.date<b.date?1:-1);
+
+  els.count.textContent=`${posts.length} posts`;
+  els.btnFavs.classList.toggle('primary', state.showFavs);
+
+  els.postGrid.innerHTML = posts.map(p=>`
+    <article class="card">
+      ${p.cover?`<img class="cover" src="${p.cover}" alt="">`:''}
+      <div class="card-body">
+        <div class="small meta">${new Date(p.date).toLocaleDateString('fr-FR')} — ${p.author||''}</div>
+        <h3>${p.title}</h3>
+        <p class="meta">${p.excerpt||''}</p>
+        <div class="row">
+          <button class="button outline" data-read="${p.slug}">Lire</button>
+          <button class="button ${state.favs.has(p.slug)?'is-saved':''}" data-fav="${p.slug}">${state.favs.has(p.slug)?'★':'☆'} Favori</button>
+          <a class="button ghost" href="#" data-copy="${p.slug}">Copier lien</a>
+        </div>
+      </div>
+    </article>`).join('') || '<div class="card">Aucun article dans cette rubrique…</div>';
+
+  els.postGrid.querySelectorAll('[data-fav]').forEach(b=>b.addEventListener('click', ()=>{ const s=b.dataset.fav; state.favs.has(s)?state.favs.delete(s):state.favs.add(s); saveFavs(); renderPosts(); }));
+  els.postGrid.querySelectorAll('[data-read]').forEach(b=>b.addEventListener('click', ()=>{ const s=b.dataset.read; const p=state.data.posts.find(x=>x.slug===s); showPost(p); }));
+  els.postGrid.querySelectorAll('[data-copy]').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); const s=a.dataset.copy; const u=new URL(location.href); u.searchParams.set('p',s); navigator.clipboard.writeText(u.toString()); a.classList.add('pulse'); setTimeout(()=>a.classList.remove('pulse'),300); }));
+}
+
+function showPost(post){
+  els.postView.innerHTML = `
+    <article class="card">
+      <a href="#" id="close-post" class="back-link">← Retour aux articles</a>
+      <h2>${post.title}</h2>
+      <div class="small meta">${new Date(post.date).toLocaleDateString('fr-FR')} — ${post.author||''}</div>
+      ${post.cover?`<img class="cover" src="${post.cover}" alt="">`:''}
+      <div class="body">${post.body||''}</div>
+    </article>`;
+  els.postView.classList.remove('hidden'); els.postGrid.classList.add('hidden');
+  document.getElementById('close-post').addEventListener('click', e=>{ e.preventDefault(); els.postView.classList.add('hidden'); els.postGrid.classList.remove('hidden'); });
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script defer src="./js/cta.js"></script>
 </body></html>
