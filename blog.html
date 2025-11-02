@@ -8,7 +8,6 @@
 </head>
 <body>
 
-  <!-- Topbar (tu peux la laisser telle quelle) -->
   <header class="topbar">
     <nav class="topbar-nav">
       <div class="brand"><img src="./assets/logo-hero.png" alt="Logo CSC"/><span>Charlott’ Street Club</span></div>
@@ -24,31 +23,26 @@
     </nav>
   </header>
 
-  <!-- Contenu du blog -->
   <main class="container">
     <h1>Blog</h1>
     <p class="meta">Lectures pour agir — 100% statique, aucune collecte.</p>
 
-    <!-- Barre filtres / recherche -->
-    <div class="toolbar">
-      <div class="tabs" data-blog-cats></div>
-      <div class="search">
-        <input id="blog-search" type="search" placeholder="Rechercher un article…" aria-label="Rechercher"/>
+    <div class="toolbar" style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap">
+      <div class="tabs" data-blog-cats style="display:flex;gap:.5rem;flex-wrap:wrap"></div>
+      <div class="search" style="margin-left:auto;display:flex;gap:.5rem;align-items:center">
+        <input id="blog-search" type="search" placeholder="Rechercher un article…" aria-label="Rechercher" />
         <button class="pill" data-blog-show-saved>⭐ Enregistrés</button>
       </div>
     </div>
 
-    <!-- Liste d'articles (vue par défaut) -->
-    <div aria-live="polite">
-      <p class="small" style="margin:.5rem 0;">Résultats : <span data-blog-count></span></p>
+    <div aria-live="polite" style="margin-top:.5rem">
+      <p class="small" style="margin:.5rem 0;">Résultats : <span data-blog-count>0</span></p>
       <section class="grid" data-blog-list></section>
     </div>
 
-    <!-- Lecture d'un article (si ?p=slug dans l'URL) -->
     <section data-blog-post style="margin-top:1rem"></section>
   </main>
 
-  <!-- Bouton flottant + logique du blog -->
   <script defer src="./js/cta.js"></script>
   <script defer src="./js/blog.js"></script>
 </body>

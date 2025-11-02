@@ -1,170 +1,128 @@
-(function(){
-  const Q = new URLSearchParams(location.search);
-  const slug = Q.get('p');
+// js/blog.js — Blog statique (JSON)
+(async function(){
+  const TABS = document.getElementById('tabs');
+  const GRID = document.getElementById('grid');
+  const Q = document.getElementById('q');
+  const DLG = document.getElementById('dlg');
+  const DLG_BODY = document.getElementById('dlgBody');
+  const DLG_CLOSE = document.getElementById('dlgClose');
+  const DLG_COPY = document.getElementById('dlgCopyLink');
 
-  const els = {
-    listRoot: document.querySelector('[data-blog-list]'),
-    postRoot: document.querySelector('[data-blog-post]'),
-    catNav:   document.querySelector('[data-blog-cats]'),
-    search:   document.getElementById('blog-search'),
-    count:    document.querySelector('[data-blog-count]'),
-    savedBtn: document.querySelector('[data-blog-show-saved]')
-  };
+  const res = await fetch('./data/blog.json');
+  const data = await res.json();
+  const categories = [{id:'all', name:'Tous', emoji:'✨'}].concat(data.categories);
+  let state = { cat:'all', q:'' };
 
-  let data = { categories: [], posts: [] };
-  let activeCat = 'all';
-  let q = '';
-  let saved = loadSaved();
-
-  fetch('./data/blog.json')
-    .then(r => r.json())
-    .then(json => {
-      data = json;
-      if (slug) {
-        renderPost(slug);
-      } else {
-        renderCats();
-        bindUI();
-        renderList();
-      }
+  // Onglets
+  function renderTabs(){
+    TABS.innerHTML = categories.map(c => `
+      <button class="pill ${state.cat===c.id?'active':''}" data-cat="${c.id}">
+        <span>${c.emoji||''}</span> ${c.name}
+      </button>
+    `).join('');
+    TABS.querySelectorAll('.pill').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        state.cat = btn.dataset.cat;
+        renderTabs(); // met à jour l'état actif visuel
+        renderGrid();
+      });
     });
+  }
 
-  function bindUI(){
-    if (els.search){
-      els.search.addEventListener('input', (e)=>{ q = e.target.value.trim().toLowerCase(); renderList(); });
+  // Cartes
+  function renderGrid(){
+    let posts = data.posts.slice().sort((a,b)=> (a.date<b.date?1:-1));
+    if(state.cat!=='all') posts = posts.filter(p=>p.category===state.cat);
+    if(state.q){
+      const q = state.q.toLowerCase();
+      posts = posts.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        (p.excerpt||'').toLowerCase().includes(q) ||
+        (p.tags||[]).join(' ').toLowerCase().includes(q)
+      );
     }
-    if (els.savedBtn){
-      els.savedBtn.addEventListener('click', ()=>{
-        els.savedBtn.classList.toggle('is-active');
-        renderList();
+    GRID.innerHTML = posts.map(p=> card(p)).join('') || `<div class="card">Aucun résultat.</div>`;
+    GRID.querySelectorAll('[data-open]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        openPost(a.getAttribute('data-open'));
       });
-    }
-    if (els.catNav){
-      els.catNav.addEventListener('click', (e)=>{
-        const id = e.target?.dataset?.cat;
-        if(!id) return;
-        activeCat = id;
-        [...els.catNav.querySelectorAll('[data-cat]')].forEach(a=>a.classList.toggle('is-active', a.dataset.cat===id));
-        renderList();
-      });
-    }
-  }
-
-  function renderCats(){
-    if (!els.catNav) return;
-    const total = data.posts.length;
-    const items = data.categories.map(c => {
-      const count = data.posts.filter(p=>p.category===c.id).length;
-      return `<button class="pill" data-cat="${c.id}" aria-pressed="${activeCat===c.id}">${c.emoji} ${c.name}<span class="badge">${count}</span></button>`;
-    }).join('');
-    els.catNav.innerHTML = `
-      <button class="pill is-active" data-cat="all" aria-pressed="true">🌐 Tout<span class="badge">${total}</span></button>
-      ${items}
-    `;
-  }
-
-  function renderList(){
-    if (!els.listRoot) return;
-    const onlySaved = els.savedBtn?.classList.contains('is-active');
-
-    let list = data.posts.slice().sort((a,b)=> (a.date<b.date?1:-1));
-
-    if (activeCat !== 'all') list = list.filter(p=>p.category===activeCat);
-    if (q) list = list.filter(p =>
-      (p.title && p.title.toLowerCase().includes(q)) ||
-      (p.excerpt && p.excerpt.toLowerCase().includes(q)) ||
-      (p.tags||[]).some(t => t.toLowerCase().includes(q))
-    );
-    if (onlySaved) list = list.filter(p => saved.has(p.slug));
-
-    els.count && (els.count.textContent = String(list.length));
-
-    els.listRoot.innerHTML = list.map(p => card(p)).join('') || `
-      <div class="card"><p class="meta">Aucun résultat…</p></div>
-    `;
-    els.listRoot.addEventListener('click', onCardClick);
-  }
-
-  function onCardClick(e){
-    const slug = e.target?.dataset?.open;
-    if (slug){
-      location.href = `./blog.html?p=${encodeURIComponent(slug)}`;
-      return;
-    }
-    const save = e.target?.dataset?.save;
-    if (save){
-      toggleSaved(save);
-      const btn = e.target;
-      btn.classList.toggle('is-saved', saved.has(save));
-      btn.textContent = saved.has(save) ? '⭐ Enregistré' : '☆ Enregistrer';
-    }
+    });
   }
 
   function card(p){
-    const isSaved = saved.has(p.slug);
+    const cover = p.cover || './assets/logo-hero.png';
     return `
       <article class="card csc-reveal">
-        ${p.cover ? `<img class="cover" src="${p.cover}" alt="" loading="lazy"/>` : ''}
+        <img class="cover" src="${cover}" alt="" onerror="this.style.display='none'"/>
         <div class="card-body">
-          <div class="small">${fmtDate(p.date)} • ${catName(p.category)}</div>
-          <h3>${p.title}</h3>
-          <p class="meta">${p.excerpt||''}</p>
+          <div class="small meta">${formatDate(p.date)} — ${escapeHtml(p.author||'CSC')}</div>
+          <h3 style="margin:.2rem 0 .3rem">${escapeHtml(p.title)}</h3>
+          <p class="meta">${escapeHtml(p.excerpt||'')}</p>
           <div class="row">
-            <button class="button" data-open="${p.slug}">Lire</button>
-            <button class="button outline ${isSaved?'is-saved':''}" data-save="${p.slug}">${isSaved?'⭐ Enregistré':'☆ Enregistrer'}</button>
+            <a href="./blog.html#${p.slug}" class="button ghost" data-open="${p.slug}">Lire</a>
+            <button class="button outline" data-copy="${p.slug}">Copier le lien</button>
+            ${pillCat(p.category)}
           </div>
         </div>
       </article>
     `;
   }
 
-  function renderPost(slug){
+  function pillCat(cat){
+    const c = categories.find(x=>x.id===cat);
+    if(!c) return '';
+    return `<span class="pill"><span>${c.emoji||''}</span> ${c.name}</span>`;
+  }
+
+  function openPost(slug){
     const p = data.posts.find(x=>x.slug===slug);
-    if (!p){ location.href='./blog.html'; return; }
-    if (!els.postRoot) return;
-
-    els.postRoot.innerHTML = `
-      <article class="card">
-        ${p.cover ? `<img class="cover" src="${p.cover}" alt="" loading="lazy"/>` : ''}
-        <div class="card-body">
-          <div class="small">${fmtDate(p.date)} • ${catName(p.category)} • par ${p.author||'CSC'}</div>
-          <h1>${p.title}</h1>
-          <div class="prose">${p.body||''}</div>
-          <div class="row">
-            <a class="button" href="./blog.html">← Retour au blog</a>
-            <button class="button outline" data-share>Copier le lien</button>
-          </div>
-        </div>
-      </article>
+    if(!p) return;
+    DLG_BODY.innerHTML = `
+      <div class="small meta">${formatDate(p.date)} — ${escapeHtml(p.author||'CSC')}</div>
+      <h3 style="margin:.2rem 0 .6rem">${escapeHtml(p.title)}</h3>
+      ${p.cover?`<img class="cover" src="${p.cover}" alt="" onerror="this.style.display='none'"/>`:''}
+      <div style="margin-top:.6rem">${p.body||''}</div>
     `;
-
-    els.postRoot.addEventListener('click', async (e)=>{
-      if (e.target?.dataset?.share!=null){
-        await navigator.clipboard.writeText(location.href);
-        e.target.classList.add('pulse');
-        setTimeout(()=>e.target.classList.remove('pulse'),600);
-      }
-    });
+    DLG_COPY.onclick = ()=>{
+      const url = `${location.origin}${location.pathname.replace(/[^/]+$/,'')}blog.html#${slug}`;
+      navigator.clipboard.writeText(url);
+      DLG_COPY.classList.add('pulse');
+      setTimeout(()=>DLG_COPY.classList.remove('pulse'),180);
+    };
+    if(typeof DLG.showModal==='function'){ DLG.showModal(); } else { DLG.open=true; }
+    location.hash = slug;
   }
 
-  function fmtDate(s){
-    try{ return new Date(s).toLocaleDateString('fr-FR', {year:'numeric', month:'short', day:'2-digit'}); }
-    catch(e){ return s; }
+  // Recherche
+  Q.addEventListener('input', ()=>{
+    state.q = Q.value.trim();
+    renderGrid();
+  });
+
+  DLG_CLOSE.addEventListener('click', ()=>{
+    if(typeof DLG.close==='function'){ DLG.close(); } else { DLG.open=false; }
+    history.replaceState(null, '', location.pathname); // enlève le hash
+  });
+
+  // Helpers
+  function formatDate(s){
+    try{ return new Date(s).toLocaleDateString('fr-FR', {year:'numeric',month:'short',day:'2-digit'}); }
+    catch{ return s; }
   }
-  function catName(id){
-    return (data.categories.find(c=>c.id===id)||{}).name || '—';
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   }
-  function loadSaved(){
-    try{
-      return new Set(JSON.parse(localStorage.getItem('csc_blog_saved_v1')||'[]'));
-    }catch(_){ return new Set(); }
-  }
-  function persistSaved(){
-    localStorage.setItem('csc_blog_saved_v1', JSON.stringify([...saved]));
-  }
-  function toggleSaved(slug){
-    if (saved.has(slug)) saved.delete(slug);
-    else saved.add(slug);
-    persistSaved();
+
+  // Init
+  renderTabs();
+  renderGrid();
+
+  // Ouvre auto si hash
+  if(location.hash){
+    const slug = location.hash.slice(1);
+    const exists = data.posts.some(p=>p.slug===slug);
+    if(exists) openPost(slug);
   }
 })();
+
