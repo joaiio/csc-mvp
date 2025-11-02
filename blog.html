@@ -1,15 +1,45 @@
-<!doctype html><html lang="fr"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width"/>
-<title>Page en préparation — 6G</title>
-<link rel="stylesheet" href="./styles.css"/>
-</head><body>
-<header class="topbar"><nav class="topbar-nav">
-  <div class="brand"><img src="./assets/logo-hero.png" alt="Logo CSC"/><span>Charlott’ Street Club</span></div>
-  <a class="nav" href="./index.html">Accueil</a><a class="nav" href="./app.html">/app</a>
-</nav></header>
-<main class="container card">
-<h2>Page en préparation</h2>
-<p class="meta">Cette section sera activée après le RDV (intégrations, formulaires, data).</p>
-<p class="meta">Prototype — aucune donnée collectée</p>
-</main>
-</body></html>
+cat > blog.html <<'HTML'
+<!doctype html><html lang="fr">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Blog — Charlott’ Street Club</title>
+  <meta name="description" content="Rubriques : Journal, Justice citoyenne, Solidarité, Infos indépendantes, IA, Art libre. 100% client-side."/>
+  <link rel="stylesheet" href="./styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="topbar-nav">
+      <div class="brand"><img src="./assets/logo-hero.png" alt="Logo CSC"/><span>Charlott’ Street Club</span></div>
+      <a class="nav" href="./index.html">Accueil</a>
+      <a class="nav" href="./app.html">/app</a>
+      <a class="nav" href="./segments.html">/segments</a>
+      <a class="nav" href="./media-kit.html">/media-kit</a>
+      <a class="nav" href="./partenaires.html">/partenaires</a>
+      <a class="nav" href="./associations.html">/associations</a>
+      <span style="flex:1"></span>
+      <a class="nav is-cta" href="./app.html">Rejoindre l’Agora</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h2>Blog — Rubriques</h2>
+    <p class="meta">Prototype 100% client-side (aucune collecte). Filtre par rubriques, recherche, favoris (localStorage).</p>
+
+    <div class="toolbar">
+      <div class="tabs" data-cats></div>
+      <div class="search">
+        <input type="search" placeholder="Rechercher..." aria-label="Rechercher" data-search />
+        <button class="button outline" type="button" data-saved-toggle>Mes favoris</button>
+        <span class="badge"><span data-count>0</span> posts</span>
+      </div>
+    </div>
+
+    <section class="grid" data-list></section>
+  </main>
+
+  <!-- Scripts -->
+  <script defer src="./js/blog.js"></script>
+  <script defer src="./js/cta.js"></script>
+</body>
+</html>
+HTML
