@@ -1,0 +1,72 @@
+{
+  "categories": [
+    {"id": "journal",  "name": "Journal de Charlott Street", "emoji": "📓"},
+    {"id": "justice",  "name": "Espace Justice citoyenne",   "emoji": "⚖️"},
+    {"id": "entraide", "name": "Solidarité & entraide",       "emoji": "🤝"},
+    {"id": "infos",    "name": "Infos indépendantes",         "emoji": "🗞️"},
+    {"id": "ia",       "name": "Intelligence artificielle",   "emoji": "🤖"},
+    {"id": "art",      "name": "Art libre",                   "emoji": "🎨"}
+  ],
+  "posts": [
+    {
+      "slug": "journal-001-on-reconstruit",
+      "title": "On reconstruit.",
+      "excerpt": "Pourquoi ce journal, notre méthode et vos rôles.",
+      "date": "2025-11-02",
+      "author": "CSC",
+      "category": "journal",
+      "tags": ["annonce","roadmap"],
+      "body": "<p>Bienvenue dans le journal du projet. Ici on documente tout : choix, doutes, tests, victoires. Boussole : sobriété, souveraineté, solidarité. Rejoins l’Agora pour participer.</p>"
+    },
+    {
+      "slug": "justice-plainte-collective-modele",
+      "title": "Plainte collective : modèle simple",
+      "excerpt": "Un modèle pour signaler une atteinte aux droits.",
+      "date": "2025-10-30",
+      "author": "CSC - Justice",
+      "category": "justice",
+      "tags": ["recours","droits"],
+      "body": "<p>Modèle court à adapter : faits, droit applicable, demande. Version PDF signable à venir.</p>"
+    },
+    {
+      "slug": "entraide-carte-points-accueil",
+      "title": "Carte des points d’accueil (bêta)",
+      "excerpt": "Une carto légère pour s’orienter localement.",
+      "date": "2025-10-28",
+      "author": "CSC - Entraide",
+      "category": "entraide",
+      "tags": ["terrain","carto"],
+      "body": "<p>Première itération de la cartographie. Contribue via l’Agora : ajoute ton point d’aide.</p>"
+    },
+    {
+      "slug": "infos-recap-hebdo",
+      "title": "Récap’ hebdo — indépendances",
+      "excerpt": "Sélection d’articles et ressources non-alignées.",
+      "date": "2025-10-27",
+      "author": "CSC - Infos",
+      "category": "infos",
+      "tags": ["veille","analyse"],
+      "body": "<ul><li>Dossier A : état social</li><li>Étude B : non-recours</li><li>Carte C : services publics</li></ul>"
+    },
+    {
+      "slug": "ia-guichet-lilia-frugale",
+      "title": "Guichet « LilIA » frugale",
+      "excerpt": "Un compagnon IA sobre, local, utile.",
+      "date": "2025-10-26",
+      "author": "CSC - IA",
+      "category": "ia",
+      "tags": ["ia","frugal"],
+      "body": "<p>Conception d’un agent très focalisé (RSA, logement, non-recours) avec traçabilité et minimisation des données.</p>"
+    },
+    {
+      "slug": "art-libre-affiches-70s",
+      "title": "Affiches libres (style 70’s)",
+      "excerpt": "Un kit d’affiches réutilisables.",
+      "date": "2025-10-25",
+      "author": "CSC - Studio",
+      "category": "art",
+      "tags": ["affiches","assets"],
+      "body": "<p>Télécharge, imprime, colle : visuels libres sous licence Creative Commons. QR vers le manifeste.</p>"
+    }
+  ]
+}
