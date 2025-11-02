@@ -1,0 +1,34 @@
+[
+  {
+    "phase": "Déclic",
+    "messages": [
+      "Stats Productivité ↔ Protection sociale",
+      "Témoignages CEO ‘solidarité = compétitivité’"
+    ],
+    "cta": "./partenaires.html"
+  },
+  {
+    "phase": "Contrainte positive",
+    "messages": [
+      "Coût du burnout vs investissement social",
+      "Mini‑audit gratuit ‘Indice RPE’"
+    ],
+    "cta": "./partenaires.html"
+  },
+  {
+    "phase": "Solution",
+    "messages": [
+      "Webinar ‘RU, IA, 32 h’",
+      "Offre Label 6G + formation interne"
+    ],
+    "cta": "./partenaires.html"
+  },
+  {
+    "phase": "Engagement",
+    "messages": [
+      "Podcast patron + bénévole Secours Catholique",
+      "Signature Charte 6G & cas client"
+    ],
+    "cta": "./partenaires.html"
+  }
+]

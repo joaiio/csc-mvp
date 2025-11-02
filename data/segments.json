@@ -1,0 +1,69 @@
+[
+  {
+    "id": "citoyens",
+    "name": "Citoyen·ne·s / particuliers",
+    "pedago": [
+      "Déconstruire les mythes (fraude, coût du social)",
+      "Rendre lisibles les droits (RSA–SMIC, RU, services publics)",
+      "Promouvoir la solidarité & l’action locale"
+    ],
+    "engagement": [
+      "Partage, commentaire, soutien aux pétitions",
+      "Inscription newsletter / Campus Beedeez"
+    ],
+    "cta": {
+      "label": "Rejoins l’Agora",
+      "href": "./app.html"
+    },
+    "routes": [
+      "./blog.html",
+      "./petitions.html",
+      "./sondages.html",
+      "./formations.html"
+    ]
+  },
+  {
+    "id": "entreprises",
+    "name": "Entreprises / entrepreneurs",
+    "pedago": [
+      "Service public = socle de productivité",
+      "Responsabilité Politique d’Entreprise (RPE)",
+      "Modèle social + IA = gains & sens"
+    ],
+    "engagement": [
+      "Télécharger le Guide du capitalisme propre",
+      "Demander un audit ‘Label 6G’"
+    ],
+    "cta": {
+      "label": "Accède à l’Espace Partenaires",
+      "href": "./partenaires.html"
+    },
+    "routes": [
+      "./comparateur.html",
+      "./transparence.html",
+      "./formations.html"
+    ]
+  },
+  {
+    "id": "associations",
+    "name": "Associations / collectifs",
+    "pedago": [
+      "Convergence des luttes",
+      "Partage de bonnes pratiques terrain",
+      "Mutualisation ressources & visibilité"
+    ],
+    "engagement": [
+      "Rejoindre le workspace ‘Solidarité & Aide’",
+      "Coconstruire des capsules Beedeez"
+    ],
+    "cta": {
+      "label": "Collabore dans le Réseau 6G",
+      "href": "./associations.html"
+    },
+    "routes": [
+      "./formations.html",
+      "./petitions.html",
+      "./carte.html"
+    ]
+  }
+]

@@ -1,0 +1,152 @@
+[
+  {
+    "id": "c2",
+    "type": "thread",
+    "title": "La fraude des pauvres n’existe pas — ce discours cache autre chose",
+    "platforms": [
+      "X"
+    ],
+    "audience": [
+      "citoyens",
+      "associations"
+    ],
+    "copy": "🧵 1/ Ce fil ne va pas plaire... 8/ On construit ça avec vous. Rejoins notre réseau. 🖤❤️ 6G",
+    "assets": [],
+    "cta": "./petitions.html"
+  },
+  {
+    "id": "c3",
+    "type": "carousel",
+    "title": "Et si la protection sociale était une richesse ?",
+    "platforms": [
+      "LinkedIn"
+    ],
+    "audience": [
+      "entreprises"
+    ],
+    "copy": "Slides : 1) ‘La protection sociale coûte trop cher’ — FAUX ... 6) Rejoignez 6G : formation, audit, label.",
+    "assets": [
+      "gabarit_6_slides"
+    ],
+    "cta": "./partenaires.html"
+  },
+  {
+    "id": "c4",
+    "type": "podcast",
+    "title": "Non, les pauvres ne fraudent pas. Le système les abandonne.",
+    "platforms": [
+      "Telegram",
+      "Spotify"
+    ],
+    "audience": [
+      "tous"
+    ],
+    "copy": "Voix‑off 3 min (résumé) ... La révolution sociale commence ici.",
+    "assets": [
+      "bed_music_grave",
+      "cover_png"
+    ],
+    "cta": "./blog.html"
+  },
+  {
+    "id": "c5",
+    "type": "infographie",
+    "title": "RSA, Fraude & Réalité : le vrai bilan",
+    "platforms": [
+      "PDF",
+      "Facebook"
+    ],
+    "audience": [
+      "tous"
+    ],
+    "copy": "Chiffres clés : 0,3 % fraude RSA ... QR vers manifeste.",
+    "assets": [
+      "modele_A4_affiche_70s"
+    ],
+    "cta": "./petitions.html"
+  },
+  {
+    "id": "c6",
+    "type": "quiz",
+    "title": "Vrai ou faux ? Prestations sociales vs niches fiscales",
+    "platforms": [
+      "Beedeez",
+      "IG Stories"
+    ],
+    "audience": [
+      "citoyens"
+    ],
+    "copy": "Q1 Montant moyen du RSA ? ... lien vers Dossier 6G Protection sociale.",
+    "assets": [
+      "qcm_json"
+    ],
+    "cta": "./formations.html"
+  },
+  {
+    "id": "c7",
+    "type": "temoignage",
+    "title": "Karim, 32 ans : la démat’ m’a coupé du monde",
+    "platforms": [
+      "IG Reel",
+      "FB"
+    ],
+    "audience": [
+      "citoyens",
+      "associations"
+    ],
+    "copy": "Reel 60s + post FB. Script court + sous‑titres.",
+    "assets": [],
+    "cta": "./media-kit.html#c7"
+  },
+  {
+    "id": "c8",
+    "type": "etude",
+    "title": "IA libère 2h/jour : on les rend à la famille ?",
+    "platforms": [
+      "LI infographie",
+      "Blog"
+    ],
+    "audience": [
+      "entreprises"
+    ],
+    "copy": "Infographie + article 600 mots + sondage IG.",
+    "assets": [
+      "chart_png",
+      "article_md"
+    ],
+    "cta": "./partenaires.html"
+  },
+  {
+    "id": "c9",
+    "type": "guide",
+    "title": "RPE : 5 moyens de transformer vos profits en biens communs",
+    "platforms": [
+      "LI PDF"
+    ],
+    "audience": [
+      "entreprises"
+    ],
+    "copy": "E‑book 6–8 pages + teaser carrousel.",
+    "assets": [
+      "ebook_pdf",
+      "carousel_teaser"
+    ],
+    "cta": "./partenaires.html"
+  },
+  {
+    "id": "c10",
+    "type": "live",
+    "title": "Le service public sert‑il le business ? (spoiler : oui)",
+    "platforms": [
+      "LinkedIn Live"
+    ],
+    "audience": [
+      "entreprises"
+    ],
+    "copy": "Live 30 min + replay YT.",
+    "assets": [
+      "visuel_live_png"
+    ],
+    "cta": "./partenaires.html"
+  }
+]

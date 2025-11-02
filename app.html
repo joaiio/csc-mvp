@@ -1,0 +1,65 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Agora / Réseau (prototype) — Charlott’ Street Club</title>
+<meta name="description" content="Charlott’ Street Club — Prototype 100% client-side (aucune collecte)."/>
+<meta property="og:title" content="Agora / Réseau (prototype) — Charlott’ Street Club"/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="./assets/logo-hero.png"/>
+<link rel="stylesheet" href="./styles.css"/>
+<script defer src="./js/main.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <nav class="topbar-nav">
+    <div class="brand"><img src="./assets/logo-hero.png" alt="Logo CSC"/><span>Charlott’ Street Club</span></div>
+    <a class="nav" href="./index.html">Accueil</a>
+    <a class="nav" href="./app.html">/app</a>
+    <a class="nav" href="./segments.html">/segments</a>
+    <a class="nav" href="./media-kit.html">/media-kit</a>
+    <a class="nav" href="./partenaires.html">/partenaires</a>
+    <a class="nav" href="./associations.html">/associations</a>
+    <span style="flex:1"></span>
+    <a class="nav is-cta" href="./app.html">Rejoindre l’Agora</a>
+  </nav>
+</header>
+
+<main class="container">
+  <h2>Agora — Mini‑réseau (local)</h2>
+  <p class="meta">Tout est stocké dans ton navigateur (localStorage). Pas de serveur, pas de collecte.</p>
+  <section class="card">
+    <form id="composer" style="display:flex;gap:.6rem;align-items:flex-start">
+      <textarea id="content" rows="3" style="flex:1;border-radius:12px;padding:10px"></textarea>
+      <button class="button primary" type="submit">Publier</button>
+    </form>
+  </section>
+  <section id="feed" class="grid" aria-live="polite" style="margin-top:16px"></section>
+</main>
+<button class="fab" aria-label="Revenir à l’accueil" onclick="location.href='./index.html'"><span>🏠</span></button>
+<script>
+// Local mini-network
+const key = 'csc_feed_v1';
+const $feed = document.getElementById('feed');
+const $composer = document.getElementById('composer');
+const $content = document.getElementById('content');
+function read(){ return JSON.parse(localStorage.getItem(key)||'[]'); }
+function write(items){ localStorage.setItem(key, JSON.stringify(items)); render(); }
+function render(){
+  const items = read();
+  $feed.innerHTML = items.map((p,i)=>`
+    <article class="card">
+      <div class="small meta">${new Date(p.ts).toLocaleString('fr-FR')}</div>
+      <p style="white-space:pre-wrap">${p.text}</p>
+      <div style="display:flex;gap:.5rem">
+        <button class="button ghost" onclick="like(${i})">❤️ ${p.likes||0}</button>
+        <button class="button outline" onclick="del(${i})">Supprimer</button>
+      </div>
+    </article>
+  `).join('') || '<div class="card">Aucun post… commence par écrire ✍️</div>';
+}
+function like(i){ const items=read(); items[i].likes=(items[i].likes||0)+1; write(items); }
+function del(i){ const items=read(); items.splice(i,1); write(items); }
+$composer.addEventListener('submit', e=>{e.preventDefault(); const txt=$content.value.trim(); if(!txt) return; const items=read(); items.unshift({text:txt, ts:Date.now(), likes:0}); write(items); $content.value='';});
+render();
+</script>
+</body></html>

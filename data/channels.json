@@ -1,0 +1,72 @@
+[
+  {
+    "channel": "LinkedIn",
+    "tone": "Sérieux, proof-based, humour piquant",
+    "formats": [
+      "Infographies chiffres",
+      "Carrousels mythe/réalité",
+      "Études IA–RU",
+      "Témoignages d’entreprises"
+    ],
+    "cadence": "3×/semaine"
+  },
+  {
+    "channel": "X (Twitter)",
+    "tone": "Satire, punchlines, vulgarisation",
+    "formats": [
+      "Threads",
+      "Mèmes",
+      "Réactions actus"
+    ],
+    "cadence": "Quotidien"
+  },
+  {
+    "channel": "Facebook",
+    "tone": "Vulgarisation accessible, storytelling humain",
+    "formats": [
+      "Vidéos courtes témoignages",
+      "Albums infographies partageables"
+    ],
+    "cadence": "3–4×/semaine"
+  },
+  {
+    "channel": "Instagram / Threads",
+    "tone": "Visuel militant pop, inspirant",
+    "formats": [
+      "Reels 30–60 s",
+      "Carrousels 5 slides",
+      "Stories sondage"
+    ],
+    "cadence": "Stories quotid. + posts 3×/sem"
+  },
+  {
+    "channel": "TikTok",
+    "tone": "Humour noir, snack, facecam",
+    "formats": [
+      "Sketchs",
+      "Décryptages 60 s",
+      "Duos"
+    ],
+    "cadence": "4–5×/semaine"
+  },
+  {
+    "channel": "Telegram",
+    "tone": "Inside info & mobilisation",
+    "formats": [
+      "Alertes action",
+      "PDF rapports",
+      "Vocal 90 s"
+    ],
+    "cadence": "Selon actus"
+  },
+  {
+    "channel": "Discord",
+    "tone": "Co‑création & débat long",
+    "formats": [
+      "Rooms thématiques",
+      "Lives audio",
+      "Ateliers code IA"
+    ],
+    "cadence": "2 lives/semaine"
+  }
+]

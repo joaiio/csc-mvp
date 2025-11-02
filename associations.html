@@ -1,0 +1,50 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Associations — Charlott’ Street Club</title>
+<meta name="description" content="Charlott’ Street Club — Prototype 100% client-side (aucune collecte)."/>
+<meta property="og:title" content="Associations — Charlott’ Street Club"/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="./assets/logo-hero.png"/>
+<link rel="stylesheet" href="./styles.css"/>
+<script defer src="./js/main.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <nav class="topbar-nav">
+    <div class="brand"><img src="./assets/logo-hero.png" alt="Logo CSC"/><span>Charlott’ Street Club</span></div>
+    <a class="nav" href="./index.html">Accueil</a>
+    <a class="nav" href="./app.html">/app</a>
+    <a class="nav" href="./segments.html">/segments</a>
+    <a class="nav" href="./media-kit.html">/media-kit</a>
+    <a class="nav" href="./partenaires.html">/partenaires</a>
+    <a class="nav" href="./associations.html">/associations</a>
+    <span style="flex:1"></span>
+    <a class="nav is-cta" href="./app.html">Rejoindre l’Agora</a>
+  </nav>
+</header>
+
+<main class="container">
+  <h2>Associations & Collectifs</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>#ConvergenceSolidarités</h3>
+      <p>Lancez le hashtag commun et mutualisons les ressources.</p>
+      <a class="button primary" href="./media-kit.html">Prendre un visuel</a>
+    </div>
+    <div class="card">
+      <h3>Calendrier S1→S2</h3>
+      <p>Planning éditorial initial.</p>
+      <table class="table" id="calendar"></table>
+    </div>
+  </div>
+</main>
+<button class="fab" aria-label="Ouvrir l’Agora" onclick="location.href='./app.html'"><span>⚡</span></button>
+<script>
+fetch('./data/calendar.json').then(r=>r.json()).then(data=>{
+ const t=document.getElementById('calendar');
+ t.innerHTML = '<tr><th>Semaine</th><th>Citoyens</th><th>Entreprises</th><th>Associations</th></tr>' +
+  Object.keys(data).map(k=>`<tr><td><b>${k}</b></td><td>${data[k].citoyens}</td><td>${data[k].entreprises}</td><td>${data[k].associations}</td></tr>`).join('');
+});
+</script>
+</body></html>
