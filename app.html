@@ -9,8 +9,7 @@
   <meta property="og:type" content="website"/>
   <meta property="og:image" content="./assets/logo-hero.png"/>
   <link rel="stylesheet" href="./styles.css"/>
-  <!-- Ton JS global si besoin -->
-  <script defer src="./js/main.js"></script>
+  <!-- ⚠️ On ne charge PAS main.js ici pour éviter les conflits -->
 </head>
 <body>
 
@@ -32,7 +31,7 @@
     </nav>
   </header>
 
-  <!-- Profil local (sans <form>) -->
+  <!-- Profil local -->
   <div class="csc-profile" id="csc-profile" style="padding:12px 16px;">
     <span class="csc-avatar" data-avatar></span>
     <input name="name" id="csc-profile-name" placeholder="Ton pseudo (local)" aria-label="Ton pseudo"/>
@@ -52,6 +51,199 @@
         <button class="button primary" type="submit">Publier</button>
       </form>
     </section>
+
+    <!-- Feed -->
+    <section id="feed" class="grid" aria-live="polite" style="margin-top:16px"></section>
+
+    <hr/>
+
+    <!-- Outils -->
+    <div class="csc-tools" style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <button class="button outline" id="btn-reset">Réinitialiser les données</button>
+      <button class="button" id="btn-export">Exporter (.json)</button>
+      <label class="button ghost" for="file-import" style="cursor:pointer;">Importer (.json)</label>
+      <input type="file" id="file-import" accept="application/json" hidden/>
+    </div>
+
+    <p class="meta">Démo — localStorage uniquement (aucune collecte serveur).</p>
+  </main>
+
+  <!-- Mini-réseau + profil (tout en 1, sans dépendances externes) -->
+  <script>
+  (function(){
+    // --- Clés de stockage ---
+    const FEED_KEY = 'csc_feed_v1';
+    const PROFILE_KEY = 'csc_profile_v1';
+
+    // --- Sélecteurs ---
+    const $userDisplay = document.querySelector('[data-user-name]');
+    const $profileInput = document.getElementById('csc-profile-name');
+    const $profileSave = document.querySelector('[data-profile-save]');
+    const $composer = document.getElementById('composer');
+    const $content = document.getElementById('content');
+    const $feed = document.getElementById('feed');
+
+    const $btnReset = document.getElementById('btn-reset');
+    const $btnExport = document.getElementById('btn-export');
+    const $fileImport = document.getElementById('file-import');
+
+    // --- Helpers Storage ---
+    function safeParse(json, fallback){
+      try { return JSON.parse(json); } catch(e){ return fallback; }
+    }
+    function readFeed(){
+      return safeParse(localStorage.getItem(FEED_KEY) || '[]', []);
+    }
+    function writeFeed(items){
+      localStorage.setItem(FEED_KEY, JSON.stringify(items));
+      renderFeed();
+    }
+    function readProfile(){
+      return safeParse(localStorage.getItem(PROFILE_KEY) || '{}', {});
+    }
+    function writeProfile(p){
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(p||{}));
+      renderProfile();
+    }
+
+    // --- Rendu Profil ---
+    function renderProfile(){
+      const p = readProfile();
+      const name = (p && p.name || '').trim();
+      $userDisplay.textContent = name || 'Anonyme';
+      if ($profileInput && document.activeElement !== $profileInput){
+        $profileInput.value = name || '';
+      }
+    }
+
+    // --- Rendu Feed ---
+    function renderFeed(){
+      const items = readFeed();
+      if (!items.length){
+        $feed.innerHTML = '<div class="card">Aucun post… commence par écrire ✍️</div>';
+        return;
+      }
+      $feed.innerHTML = items.map((p,i)=>`
+        <article class="card">
+          <div class="small meta">
+            ${(p.author && p.author.name) ? `<strong>${escapeHtml(p.author.name)}</strong> — ` : ''}
+            ${new Date(p.ts).toLocaleString('fr-FR')}
+          </div>
+          <p style="white-space:pre-wrap">${escapeHtml(p.text)}</p>
+          <div style="display:flex;gap:.5rem">
+            <button class="button ghost" data-like="${i}" aria-label="Aimer">❤️ ${p.likes||0}</button>
+            <button class="button outline" data-del="${i}" aria-label="Supprimer">Supprimer</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    // --- Escape simple pour le rendu texte ---
+    function escapeHtml(s){
+      return String(s||'')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;');
+    }
+
+    // --- Handlers Feed (event delegation) ---
+    $feed.addEventListener('click', (e)=>{
+      const likeIdx = e.target.closest('[data-like]')?.getAttribute('data-like');
+      const delIdx  = e.target.closest('[data-del]')?.getAttribute('data-del');
+
+      if (likeIdx !== null && likeIdx !== undefined){
+        const idx = Number(likeIdx);
+        const items = readFeed();
+        if (!items[idx]) return;
+        items[idx].likes = (items[idx].likes||0) + 1;
+        writeFeed(items);
+        return;
+      }
+      if (delIdx !== null && delIdx !== undefined){
+        const idx = Number(delIdx);
+        const items = readFeed();
+        if (!items[idx]) return;
+        items.splice(idx,1);
+        writeFeed(items);
+        return;
+      }
+    });
+
+    // --- Publier ---
+    $composer.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const txt = ($content.value || '').trim();
+      if (!txt) return;
+      const prof = readProfile();
+      const name = (prof.name || '').trim();
+      const items = readFeed();
+      items.unshift({ text: txt, ts: Date.now(), likes: 0, author: { name: name || 'Anonyme' } });
+      writeFeed(items);
+      $content.value = '';
+    });
+
+    // --- Sauver profil ---
+    $profileSave.addEventListener('click', ()=>{
+      const name = ($profileInput.value || '').trim();
+      writeProfile({ name });
+    });
+
+    // --- Reset / Export / Import ---
+    $btnReset.addEventListener('click', ()=>{
+      if (confirm('Réinitialiser ton profil et tous les posts locaux ?')){
+        localStorage.removeItem(FEED_KEY);
+        localStorage.removeItem(PROFILE_KEY);
+        renderProfile();
+        renderFeed();
+      }
+    });
+
+    $btnExport.addEventListener('click', ()=>{
+      const data = {
+        profile: readProfile(),
+        feed: readFeed(),
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data,null,2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'csc-local-data.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    $fileImport.addEventListener('change', async (e)=>{
+      const f = e.target.files?.[0];
+      if (!f) return;
+      try{
+        const text = await f.text();
+        const data = JSON.parse(text);
+        if (data?.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile));
+        if (Array.isArray(data?.feed)) localStorage.setItem(FEED_KEY, JSON.stringify(data.feed));
+        renderProfile();
+        renderFeed();
+        alert('Import OK');
+      }catch(err){
+        alert('Fichier invalide.');
+      }finally{
+        e.target.value = '';
+      }
+    });
+
+    // --- Init ---
+    renderProfile();
+    renderFeed();
+  })();
+  </script>
+
+  <!-- Bouton flottant global -->
+  <script defer src="./js/cta.js"></script>
+</body>
+</html>
+
 
     <!-- Feed -->
     <section id="feed" class="grid" aria-live="polite" style="margin-top:16px"></section>
