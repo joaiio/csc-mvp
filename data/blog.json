@@ -1,3 +1,5 @@
+mkdir -p data
+cat > data/blog.json <<'JSON'
 {
   "categories": [
     {"id": "journal",  "name": "Journal de Charlott Street", "emoji": "📓"},
@@ -76,3 +78,5 @@
     }
   ]
 }
+JSON
+

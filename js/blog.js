@@ -1,128 +1,136 @@
-// js/blog.js — Blog statique (JSON)
-(async function(){
-  const TABS = document.getElementById('tabs');
-  const GRID = document.getElementById('grid');
-  const Q = document.getElementById('q');
-  const DLG = document.getElementById('dlg');
-  const DLG_BODY = document.getElementById('dlgBody');
-  const DLG_CLOSE = document.getElementById('dlgClose');
-  const DLG_COPY = document.getElementById('dlgCopyLink');
+cat > js/blog.js <<'JS'
+// js/blog.js — Blog statique (fetch JSON + filtres + favoris)
+(async function () {
+  const $list   = document.querySelector('[data-list]');
+  const $cats   = document.querySelector('[data-cats]');
+  const $count  = document.querySelector('[data-count]');
+  const $search = document.querySelector('[data-search]');
+  const $savedToggle = document.querySelector('[data-saved-toggle]');
 
-  const res = await fetch('./data/blog.json');
-  const data = await res.json();
-  const categories = [{id:'all', name:'Tous', emoji:'✨'}].concat(data.categories);
-  let state = { cat:'all', q:'' };
+  const SAVED_KEY = 'csc_blog_saved_v1';
+  let saved = new Set(JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'));
+  const persistSaved = () => localStorage.setItem(SAVED_KEY, JSON.stringify([...saved]));
 
-  // Onglets
-  function renderTabs(){
-    TABS.innerHTML = categories.map(c => `
-      <button class="pill ${state.cat===c.id?'active':''}" data-cat="${c.id}">
-        <span>${c.emoji||''}</span> ${c.name}
-      </button>
-    `).join('');
-    TABS.querySelectorAll('.pill').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        state.cat = btn.dataset.cat;
-        renderTabs(); // met à jour l'état actif visuel
-        renderGrid();
-      });
-    });
+  let data;
+  try {
+    const res = await fetch('./data/blog.json', { cache: 'no-store' });
+    data = await res.json();
+  } catch (err) {
+    console.error('Erreur JSON blog:', err);
+    $list.innerHTML = '<div class="card">⚠️ Impossible de charger <code>data/blog.json</code>. Vérifie le fichier, puis rafraîchis.</div>';
+    return;
   }
 
-  // Cartes
-  function renderGrid(){
-    let posts = data.posts.slice().sort((a,b)=> (a.date<b.date?1:-1));
-    if(state.cat!=='all') posts = posts.filter(p=>p.category===state.cat);
-    if(state.q){
+  const categories = data.categories || [];
+  const posts = (data.posts || []).slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+
+  const qs = new URLSearchParams(location.search);
+  let state = {
+    category: qs.get('cat') || 'all',
+    q: '',
+    showSaved: false,
+  };
+
+  function renderCats() {
+    const html = ['all', ...categories.map(c => c.id)].map(id => {
+      const c = id === 'all' ? { id:'all', name:'Tous', emoji:'🗂️' } : categories.find(x => x.id === id);
+      const active = state.category === id ? 'is-active' : '';
+      const n = id === 'all' ? posts.length : posts.filter(p => p.category === id).length;
+      return `<button class="pill ${active}" data-cat="${id}">${c.emoji ? c.emoji + ' ' : ''}${c.name} <span class="badge">${n}</span></button>`;
+    }).join('');
+    $cats.innerHTML = html;
+  }
+
+  function render() {
+    let rows = posts.slice();
+    if (state.category !== 'all') rows = rows.filter(p => p.category === state.category);
+    if (state.q) {
       const q = state.q.toLowerCase();
-      posts = posts.filter(p =>
-        p.title.toLowerCase().includes(q) ||
-        (p.excerpt||'').toLowerCase().includes(q) ||
-        (p.tags||[]).join(' ').toLowerCase().includes(q)
-      );
+      rows = rows.filter(p => (p.title + ' ' + p.excerpt).toLowerCase().includes(q));
     }
-    GRID.innerHTML = posts.map(p=> card(p)).join('') || `<div class="card">Aucun résultat.</div>`;
-    GRID.querySelectorAll('[data-open]').forEach(a=>{
-      a.addEventListener('click', (e)=>{
-        e.preventDefault();
-        openPost(a.getAttribute('data-open'));
-      });
-    });
-  }
+    if (state.showSaved) rows = rows.filter(p => saved.has(p.slug));
 
-  function card(p){
-    const cover = p.cover || './assets/logo-hero.png';
-    return `
+    $count.textContent = String(rows.length);
+    if (!rows.length) {
+      $list.innerHTML = '<div class="card">Aucun article pour ces filtres.</div>';
+      return;
+    }
+
+    $list.innerHTML = rows.map(p => `
       <article class="card csc-reveal">
-        <img class="cover" src="${cover}" alt="" onerror="this.style.display='none'"/>
+        ${p.cover ? `<img class="cover" src="${p.cover}" alt="">` : ''}
         <div class="card-body">
-          <div class="small meta">${formatDate(p.date)} — ${escapeHtml(p.author||'CSC')}</div>
-          <h3 style="margin:.2rem 0 .3rem">${escapeHtml(p.title)}</h3>
-          <p class="meta">${escapeHtml(p.excerpt||'')}</p>
-          <div class="row">
-            <a href="./blog.html#${p.slug}" class="button ghost" data-open="${p.slug}">Lire</a>
-            <button class="button outline" data-copy="${p.slug}">Copier le lien</button>
-            ${pillCat(p.category)}
+          <div class="small meta">
+            ${(categories.find(c=>c.id===p.category)?.emoji || '🗂️')}
+            ${(categories.find(c=>c.id===p.category)?.name || '')}
+            • ${new Date(p.date).toLocaleDateString('fr-FR')}
+            • par ${p.author || 'CSC'}
           </div>
+          <h3 style="margin:.3rem 0">${p.title}</h3>
+          <p class="meta">${p.excerpt}</p>
+          <div class="row">
+            <a class="button outline" href="#${p.slug}" data-read="${p.slug}">Lire</a>
+            <button class="button ${saved.has(p.slug) ? 'is-saved':''}" data-save="${p.slug}">
+              ${saved.has(p.slug) ? '★ Sauvé' : '☆ Sauver'}
+            </button>
+            <button class="button ghost" data-copy="${p.slug}">Copier le lien</button>
+          </div>
+          <div class="post-body" data-body="${p.slug}" style="display:none;margin-top:.6rem"></div>
         </div>
       </article>
-    `;
+    `).join('');
   }
 
-  function pillCat(cat){
-    const c = categories.find(x=>x.id===cat);
-    if(!c) return '';
-    return `<span class="pill"><span>${c.emoji||''}</span> ${c.name}</span>`;
-  }
-
-  function openPost(slug){
-    const p = data.posts.find(x=>x.slug===slug);
-    if(!p) return;
-    DLG_BODY.innerHTML = `
-      <div class="small meta">${formatDate(p.date)} — ${escapeHtml(p.author||'CSC')}</div>
-      <h3 style="margin:.2rem 0 .6rem">${escapeHtml(p.title)}</h3>
-      ${p.cover?`<img class="cover" src="${p.cover}" alt="" onerror="this.style.display='none'"/>`:''}
-      <div style="margin-top:.6rem">${p.body||''}</div>
-    `;
-    DLG_COPY.onclick = ()=>{
-      const url = `${location.origin}${location.pathname.replace(/[^/]+$/,'')}blog.html#${slug}`;
-      navigator.clipboard.writeText(url);
-      DLG_COPY.classList.add('pulse');
-      setTimeout(()=>DLG_COPY.classList.remove('pulse'),180);
-    };
-    if(typeof DLG.showModal==='function'){ DLG.showModal(); } else { DLG.open=true; }
-    location.hash = slug;
-  }
-
-  // Recherche
-  Q.addEventListener('input', ()=>{
-    state.q = Q.value.trim();
-    renderGrid();
+  // Interactions
+  $cats.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-cat]');
+    if (!btn) return;
+    state.category = btn.dataset.cat;
+    renderCats(); render();
+    const params = new URLSearchParams(location.search);
+    if (state.category === 'all') params.delete('cat'); else params.set('cat', state.category);
+    history.replaceState(null, '', '?' + params.toString());
   });
 
-  DLG_CLOSE.addEventListener('click', ()=>{
-    if(typeof DLG.close==='function'){ DLG.close(); } else { DLG.open=false; }
-    history.replaceState(null, '', location.pathname); // enlève le hash
+  $search.addEventListener('input', (e)=>{ state.q = e.target.value.trim(); render(); });
+
+  $savedToggle.addEventListener('click', ()=>{
+    state.showSaved = !state.showSaved;
+    $savedToggle.classList.toggle('is-active', state.showSaved);
+    render();
   });
 
-  // Helpers
-  function formatDate(s){
-    try{ return new Date(s).toLocaleDateString('fr-FR', {year:'numeric',month:'short',day:'2-digit'}); }
-    catch{ return s; }
-  }
-  function escapeHtml(str){
-    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-  }
+  document.addEventListener('click', (e)=>{
+    const saveBtn = e.target.closest('[data-save]');
+    const readBtn = e.target.closest('[data-read]');
+    const copyBtn = e.target.closest('[data-copy]');
+    if (saveBtn) {
+      const slug = saveBtn.dataset.save;
+      if (saved.has(slug)) saved.delete(slug); else saved.add(slug);
+      persistSaved(); render();
+    }
+    if (readBtn) {
+      e.preventDefault();
+      const slug = readBtn.dataset.read;
+      const el = document.querySelector(`[data-body="${slug}"]`);
+      const post = posts.find(p=>p.slug===slug);
+      if (el && post) {
+        el.innerHTML = post.body;
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      }
+    }
+    if (copyBtn) {
+      const slug = copyBtn.dataset.copy;
+      const cat = posts.find(p=>p.slug===slug)?.category || 'all';
+      const url = location.origin + location.pathname + '?cat=' + encodeURIComponent(cat) + '#' + slug;
+      navigator.clipboard.writeText(url).then(()=>{
+        copyBtn.classList.add('pulse'); setTimeout(()=>copyBtn.classList.remove('pulse'), 160);
+      });
+    }
+  });
 
-  // Init
-  renderTabs();
-  renderGrid();
-
-  // Ouvre auto si hash
-  if(location.hash){
-    const slug = location.hash.slice(1);
-    const exists = data.posts.some(p=>p.slug===slug);
-    if(exists) openPost(slug);
-  }
+  renderCats();
+  render();
 })();
+JS
 
