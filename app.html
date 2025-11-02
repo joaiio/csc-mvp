@@ -9,7 +9,6 @@
   <meta property="og:type" content="website"/>
   <meta property="og:image" content="./assets/logo-hero.png"/>
   <link rel="stylesheet" href="./styles.css"/>
-  <!-- ⚠️ On ne charge PAS main.js ici pour éviter les conflits -->
 </head>
 <body>
 
@@ -68,7 +67,7 @@
     <p class="meta">Démo — localStorage uniquement (aucune collecte serveur).</p>
   </main>
 
-  <!-- Mini-réseau + profil (tout en 1, sans dépendances externes) -->
+  <!-- Script unique : profil + feed -->
   <script>
   (function(){
     // --- Clés de stockage ---
@@ -78,75 +77,97 @@
     // --- Sélecteurs ---
     const $userDisplay = document.querySelector('[data-user-name]');
     const $profileInput = document.getElementById('csc-profile-name');
-    const $profileSave = document.querySelector('[data-profile-save]');
-    const $composer = document.getElementById('composer');
-    const $content = document.getElementById('content');
-    const $feed = document.getElementById('feed');
+    const $profileSave  = document.querySelector('[data-profile-save]');
+    const $composer     = document.getElementById('composer');
+    const $content      = document.getElementById('content');
+    const $feed         = document.getElementById('feed');
 
-    const $btnReset = document.getElementById('btn-reset');
+    const $btnReset  = document.getElementById('btn-reset');
     const $btnExport = document.getElementById('btn-export');
-    const $fileImport = document.getElementById('file-import');
+    const $fileImport= document.getElementById('file-import');
 
-    // --- Helpers Storage ---
-    function safeParse(json, fallback){
-      try { return JSON.parse(json); } catch(e){ return fallback; }
-    }
-    function readFeed(){
-      return safeParse(localStorage.getItem(FEED_KEY) || '[]', []);
-    }
-    function writeFeed(items){
-      localStorage.setItem(FEED_KEY, JSON.stringify(items));
-      renderFeed();
-    }
+    // --- Helpers ---
+    const safeParse = (j, f) => { try { return JSON.parse(j); } catch { return f; } };
+
+    const readFeed   = () => safeParse(localStorage.getItem(FEED_KEY)   || '[]', []);
+    const writeFeed  = (items) => { localStorage.setItem(FEED_KEY, JSON.stringify(items)); renderFeed(); };
+
     function readProfile(){
-      return safeParse(localStorage.getItem(PROFILE_KEY) || '{}', {});
+      const p = safeParse(localStorage.getItem(PROFILE_KEY) || '{}', {});
+      if (p?.name) return p;
+      // rétrocompat (au cas où)
+      const legacy = safeParse(localStorage.getItem('csc_profile') || '{}', {});
+      if (legacy?.name) return legacy;
+      return {};
     }
     function writeProfile(p){
-      localStorage.setItem(PROFILE_KEY, JSON.stringify(p||{}));
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(p || {}));
       renderProfile();
     }
 
-    // --- Rendu Profil ---
+    // Récupère le pseudo fiable : champ > stockage > "Anonyme"
+    function currentName(){
+      const fromInput = ($profileInput?.value || '').trim();
+      if (fromInput) return fromInput;
+      const stored = (readProfile().name || '').trim();
+      return stored || 'Anonyme';
+    }
+
+    // Migration : pose un author.name si absent
+    function migrateFeedAuthor(){
+      const n = (readProfile().name || '').trim();
+      if (!n) return;
+      const items = readFeed();
+      let changed = false;
+      for (const p of items){
+        const cur = (p.author?.name || p.authorName || '').trim();
+        if (!cur || cur === 'Anonyme'){
+          p.author = { name: n };
+          delete p.authorName; // nettoie anciens champs si présents
+          changed = true;
+        }
+      }
+      if (changed) localStorage.setItem(FEED_KEY, JSON.stringify(items));
+    }
+
+    // Rendus
     function renderProfile(){
-      const p = readProfile();
-      const name = (p && p.name || '').trim();
-      $userDisplay.textContent = name || 'Anonyme';
+      const n = (readProfile().name || '').trim();
+      $userDisplay.textContent = n || 'Anonyme';
       if ($profileInput && document.activeElement !== $profileInput){
-        $profileInput.value = name || '';
+        $profileInput.value = n || '';
       }
     }
 
-    // --- Rendu Feed ---
+    function esc(s){
+      return String(s||'')
+        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    }
+
     function renderFeed(){
       const items = readFeed();
       if (!items.length){
         $feed.innerHTML = '<div class="card">Aucun post… commence par écrire ✍️</div>';
         return;
       }
-      $feed.innerHTML = items.map((p,i)=>`
-        <article class="card">
-          <div class="small meta">
-            ${(p.author && p.author.name) ? `<strong>${escapeHtml(p.author.name)}</strong> — ` : ''}
-            ${new Date(p.ts).toLocaleString('fr-FR')}
-          </div>
-          <p style="white-space:pre-wrap">${escapeHtml(p.text)}</p>
-          <div style="display:flex;gap:.5rem">
-            <button class="button ghost" data-like="${i}" aria-label="Aimer">❤️ ${p.likes||0}</button>
-            <button class="button outline" data-del="${i}" aria-label="Supprimer">Supprimer</button>
-          </div>
-        </article>
-      `).join('');
+      $feed.innerHTML = items.map((p,i)=>{
+        const name = p.author?.name || p.authorName || readProfile().name || 'Anonyme';
+        return `
+          <article class="card">
+            <div class="small meta">
+              <strong>${esc(name)}</strong> — ${new Date(p.ts).toLocaleString('fr-FR')}
+            </div>
+            <p style="white-space:pre-wrap">${esc(p.text)}</p>
+            <div style="display:flex;gap:.5rem">
+              <button class="button ghost" data-like="${i}" aria-label="Aimer">❤️ ${p.likes||0}</button>
+              <button class="button outline" data-del="${i}" aria-label="Supprimer">Supprimer</button>
+            </div>
+          </article>
+        `;
+      }).join('');
     }
 
-    // --- Escape simple pour le rendu texte ---
-    function escapeHtml(s){
-      return String(s||'')
-        .replaceAll('&','&amp;')
-        .replaceAll('<','&lt;')
-        .replaceAll('>','&gt;');
-    }
-
-    // --- Handlers Feed (event delegation) ---
+    // Events like/supprimer (délégation)
     $feed.addEventListener('click', (e)=>{
       const likeIdx = e.target.closest('[data-like]')?.getAttribute('data-like');
       const delIdx  = e.target.closest('[data-del]')?.getAttribute('data-del');
@@ -169,27 +190,51 @@
       }
     });
 
-    // --- Publier ---
+    // Publier (auto-sauvegarde du pseudo si présent)
     $composer.addEventListener('submit', (e)=>{
       e.preventDefault();
       const txt = ($content.value || '').trim();
       if (!txt) return;
-      const prof = readProfile();
-      const name = (prof.name || '').trim();
+
+      const name = currentName();
+      if (name && name !== 'Anonyme'){
+        writeProfile({ name }); // auto-save
+      }
+
       const items = readFeed();
-      items.unshift({ text: txt, ts: Date.now(), likes: 0, author: { name: name || 'Anonyme' } });
+      items.unshift({
+        text: txt,
+        ts: Date.now(),
+        likes: 0,
+        author: { name }
+      });
       writeFeed(items);
       $content.value = '';
     });
 
-    // --- Sauver profil ---
+    // Sauvegarder le profil (bouton) + Enter
     $profileSave.addEventListener('click', ()=>{
-      const name = ($profileInput.value || '').trim();
-      writeProfile({ name });
+      const n = currentName();
+      writeProfile({ name: n });
+      migrateFeedAuthor();
+      renderFeed();
+    });
+    $profileInput?.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter'){
+        e.preventDefault();
+        const n = currentName();
+        writeProfile({ name: n });
+        migrateFeedAuthor();
+        renderFeed();
+      }
+    });
+    $profileInput?.addEventListener('blur', ()=>{
+      const n = ($profileInput.value || '').trim();
+      if (n) writeProfile({ name: n });
     });
 
-    // --- Reset / Export / Import ---
-    $btnReset.addEventListener('click', ()=>{
+    // Reset / Export / Import
+    document.getElementById('btn-reset').addEventListener('click', ()=>{
       if (confirm('Réinitialiser ton profil et tous les posts locaux ?')){
         localStorage.removeItem(FEED_KEY);
         localStorage.removeItem(PROFILE_KEY);
@@ -197,44 +242,32 @@
         renderFeed();
       }
     });
-
     $btnExport.addEventListener('click', ()=>{
-      const data = {
-        profile: readProfile(),
-        feed: readFeed(),
-        exportedAt: new Date().toISOString()
-      };
+      const data = { profile: readProfile(), feed: readFeed(), exportedAt: new Date().toISOString() };
       const blob = new Blob([JSON.stringify(data,null,2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = 'csc-local-data.json';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      a.href = url; a.download = 'csc-local-data.json'; document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     });
-
     $fileImport.addEventListener('change', async (e)=>{
-      const f = e.target.files?.[0];
-      if (!f) return;
+      const f = e.target.files?.[0]; if (!f) return;
       try{
         const text = await f.text();
         const data = JSON.parse(text);
         if (data?.profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile));
         if (Array.isArray(data?.feed)) localStorage.setItem(FEED_KEY, JSON.stringify(data.feed));
+        migrateFeedAuthor();
         renderProfile();
         renderFeed();
         alert('Import OK');
-      }catch(err){
-        alert('Fichier invalide.');
-      }finally{
-        e.target.value = '';
-      }
+      }catch{ alert('Fichier invalide.'); }
+      finally{ e.target.value=''; }
     });
 
-    // --- Init ---
+    // Init
     renderProfile();
+    migrateFeedAuthor();
     renderFeed();
   })();
   </script>
@@ -244,89 +277,4 @@
 </body>
 </html>
 
-
-    <!-- Feed -->
-    <section id="feed" class="grid" aria-live="polite" style="margin-top:16px"></section>
-
-    <!-- Export / Import (HORS du <script>) -->
-    <hr/>
-    <div class="csc-export" style="margin-top:12px;">
-      <button class="button" data-export>Télécharger mes données (.json)</button>
-      <input type="file" data-import-file accept="application/json" hidden/>
-      <button class="button" data-import>Importer des données (.json)</button>
-      <p class="meta">Démo — export local uniquement (aucune collecte serveur).</p>
-    </div>
-  </main>
-
-  <!-- Mini-réseau (JS pur) -->
-  <script>
-  // ===== Mini réseau local (posts + likes) =====
-  (function(){
-    const KEY = 'csc_feed_v1';
-    const $feed = document.getElementById('feed');
-    const $composer = document.getElementById('composer');
-    const $content = document.getElementById('content');
-
-    function read(){
-      try { return JSON.parse(localStorage.getItem(KEY) || '[]'); }
-      catch { return []; }
-    }
-    function write(items){
-      localStorage.setItem(KEY, JSON.stringify(items));
-      render();
-    }
-    function render(){
-      const items = read();
-      if (!items.length){
-        $feed.innerHTML = '<div class="card">Aucun post… commence par écrire ✍️</div>';
-        return;
-      }
-      $feed.innerHTML = items.map((p,i)=>`
-        <article class="card">
-          <div class="small meta">${new Date(p.ts).toLocaleString('fr-FR')}</div>
-          <p style="white-space:pre-wrap">${p.text}</p>
-          <div style="display:flex;gap:.5rem">
-            <button class="button ghost" onclick="like(${i})" aria-label="Aimer">❤️ ${p.likes||0}</button>
-            <button class="button outline" onclick="del(${i})" aria-label="Supprimer">Supprimer</button>
-          </div>
-        </article>
-      `).join('');
-    }
-
-    // Expose de petites fonctions globales pour les onclick
-    window.like = function(i){
-      const items = read();
-      if (!items[i]) return;
-      items[i].likes = (items[i].likes||0) + 1;
-      write(items);
-    };
-    window.del = function(i){
-      const items = read();
-      if (!items[i]) return;
-      items.splice(i,1);
-      write(items);
-    };
-
-    // Envoi du formulaire
-    $composer.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const txt = ($content.value || '').trim();
-      if (!txt) return;
-      const items = read();
-      items.unshift({ text: txt, ts: Date.now(), likes: 0 });
-      write(items);
-      $content.value = '';
-    });
-
-    // Premier rendu
-    render();
-  })();
-  </script>
-
-  <!-- Scripts UI : bouton flottant + profil + export/import -->
-  <script defer src="./js/cta.js"></script>
-  <script defer src="./js/profile.js"></script>
-  <script defer src="./js/export.js"></script>
-</body>
-</html>
 
