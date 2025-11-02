@@ -50,3 +50,59 @@ h2{margin-top:1.4rem}
 .small{font-size:.9rem}
 .brand{font-weight:900}
 footer{opacity:.7;padding:48px 24px}
+/* === CSC: bouton flottant Agora === */
+.csc-fab{
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .8rem 1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7E1F2E, #2E7D6B); /* grenat → vert espoir */
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: .2px;
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.25),
+    0 0 30px rgba(63,164,106,.35); /* lueur verte douce */
+}
+.csc-fab:hover{
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,.3),
+    0 0 40px rgba(126,31,46,.5);
+}
+@media (prefers-reduced-motion:no-preference){
+  .csc-fab{
+    transition: transform .2s ease, box-shadow .2s ease;
+    animation: cscPulse 2.2s ease-in-out infinite;
+  }
+  @keyframes cscPulse{
+    0%,100%{ filter: drop-shadow(0 0 0 rgba(255,255,255,0)); }
+    50%{    filter: drop-shadow(0 0 12px rgba(255,255,255,.35)); }
+  }
+}
+/* === CSC: avatar simple === */
+.csc-avatar{
+  width: 36px; height: 36px; border-radius: 999px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg, #7E1F2E, #2E7D6B);
+  color:#fff; font-weight:800; letter-spacing:.3px;
+}
+
+/* champ profil discret */
+.csc-profile{
+  display:flex; gap:.5rem; align-items:center; margin:.5rem 0;
+}
+.csc-profile input{
+  border:1px solid #ddd; border-radius:.6rem; padding:.4rem .6rem;
+}
+.csc-profile button{
+  border:0; border-radius:.6rem; padding:.5rem .8rem;
+  background:#2E7D6B; color:#fff; font-weight:700;
+}
+.csc-profile button:hover{ filter:brightness(1.05); }

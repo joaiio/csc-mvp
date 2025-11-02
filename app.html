@@ -23,7 +23,14 @@
     <a class="nav is-cta" href="./app.html">Rejoindre l’Agora</a>
   </nav>
 </header>
-
+<div class="csc-profile">
+  <span class="csc-avatar" data-avatar></span>
+  <form id="csc-profile-form" aria-label="Profil local">
+    <input name="name" placeholder="Ton pseudo (local)" aria-label="Ton pseudo"/>
+    <button type="submit">Enregistrer</button>
+  </form>
+  <span>Bienvenue, <strong data-user-name>Anonyme</strong></span>
+</div>
 <main class="container">
   <h2>Agora — Mini‑réseau (local)</h2>
   <p class="meta">Tout est stocké dans ton navigateur (localStorage). Pas de serveur, pas de collecte.</p>
@@ -62,4 +69,6 @@ function del(i){ const items=read(); items.splice(i,1); write(items); }
 $composer.addEventListener('submit', e=>{e.preventDefault(); const txt=$content.value.trim(); if(!txt) return; const items=read(); items.unshift({text:txt, ts:Date.now(), likes:0}); write(items); $content.value='';});
 render();
 </script>
+<script defer src="./js/cta.js"></script>
+<script defer src="./js/profile.js"></script>
 </body></html>
