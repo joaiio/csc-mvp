@@ -12,4 +12,21 @@
 <p class="meta">Cette section sera activée après le RDV (intégrations, formulaires, data).</p>
 <p class="meta">Prototype — aucune donnée collectée</p>
 </main>
+<section class="card" data-poll>
+  <h2>Sondage express</h2>
+  <p>Le service public sert-il le business ?</p>
+  <div class="grid">
+    <button class="button" data-option="oui">Oui</button>
+    <button class="button" data-option="non">Non</button>
+    <button class="button" data-option="nuancé">Nuancé</button>
+  </div>
+  <p class="meta">Résultats :</p>
+  <ul>
+    <li>Oui : <strong data-count="oui">0</strong></li>
+    <li>Non : <strong data-count="non">0</strong></li>
+    <li>Nuancé : <strong data-count="nuancé">0</strong></li>
+  </ul>
+  <p class="meta" data-voted hidden>Merci, 1 vote enregistré sur cet appareil.</p>
+</section>
+<script defer src="./js/poll.js"></script>
 </body></html>
