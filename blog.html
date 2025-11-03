@@ -2,47 +2,105 @@
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width"/>
   <title>Blog — Charlott’ Street Club</title>
-  <link rel="stylesheet" href="./styles.css"/>
-  <link rel="stylesheet" href="./styles-blog.css?v=1">
-  <style>
-    /* === Styles spécifiques au blog (isolés, non intrusifs) === */
-    .hidden{display:none !important;}
 
+  <!-- feuille globale du site -->
+  <link rel="stylesheet" href="./styles.css"/>
+
+  <!-- (ok de laisser si tu l'as déjà, mais on n'en dépend plus) -->
+  <link rel="stylesheet" href="./styles-blog.css?v=1">
+
+  <!-- OVERRIDES INLINE = priorité max (dégradés animés, look street/neon) -->
+  <style id="blog-overrides">
+    :root{
+      /* palette extra, en plus de celles déjà dans styles.css */
+      --c-rose:#D14D72; 
+      --c-gold:#FFD465; 
+      --c-turq:#00E0FF; 
+      --c-orange:#FF8A00; 
+      --c-vert-2:#63A46A;
+
+      /* dégradés Charlott’ par rubrique (mélange avec tes iris/grenat/vert) */
+      --grad-journal:  linear-gradient(120deg, var(--c-iris-1), var(--c-turq), var(--c-iris-3));
+      --grad-justice:  linear-gradient(120deg, var(--c-orange), var(--c-gold));
+      --grad-entraide: linear-gradient(120deg, var(--c-vert), var(--c-vert-2));
+      --grad-infos:    linear-gradient(120deg, var(--c-grenat), var(--c-rose));
+      --grad-ia:       linear-gradient(120deg, var(--c-turq), var(--c-iris-1));
+      --grad-art:      linear-gradient(120deg, var(--c-rose), var(--c-orange));
+    }
+
+    /* helpers locaux */
+    .hidden{ display:none !important; }
+
+    /* grille des tuiles */
     .cats-grid{
-      display:grid; gap:16px;
+      display:grid; gap:20px;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       margin: 12px 0 20px;
     }
+
+    /* TUile : angle coupé + glow interne + dégradé animé */
     .cat-card{
       position:relative; overflow:hidden; cursor:pointer;
-      border-radius:20px; border:1px solid rgba(255,255,255,.08);
-      padding:22px; min-height:140px; text-align:left; color:#fff;
-      box-shadow: var(--shadow, 0 10px 30px rgba(0,0,0,.35));
-      transform: translateY(0); transition: transform .15s ease, box-shadow .2s ease;
-      background: linear-gradient(135deg,#1c1c1c,#0e0e0e);
+      border-radius:24px; padding:26px; min-height:160px; text-align:left; color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      /* base (sera surchargée par variantes) */
+      background: var(--grad-journal) !important;
+      background-size: 260% 260% !important;
+      animation: cscHolo 16s linear infinite !important;
+      box-shadow:
+        0 14px 40px rgba(0,0,0,.35),
+        0 0 0 1px rgba(255,255,255,.06) inset,
+        0 0 30px rgba(0,224,255,.12) inset !important;
+      /* coupe “street” sur le coin droit */
+      clip-path: polygon(0 0, 96% 0, 100% 10%, 100% 100%, 0 100%) !important;
+      transform: translateY(0);
+      transition: transform .18s ease, box-shadow .25s ease, clip-path .25s ease;
     }
-    .cat-card .emoji{ font-size:42px; display:block; opacity:.95; }
-    .cat-card .title{ margin-top:8px; font-weight:900; font-size:1.12rem; letter-spacing:.3px; }
-    .cat-card:hover{ transform: translateY(-3px); box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+    .cat-card .emoji{ font-size:44px; display:block; opacity:.95; text-shadow:0 4px 18px rgba(0,0,0,.35); }
+    .cat-card .title{ margin-top:10px; font-weight:900; font-size:1.14rem; letter-spacing:.3px; text-shadow:0 2px 12px rgba(0,0,0,.35); }
 
-    /* Variantes palette CSC */
-    .cat--journal  { background: linear-gradient(135deg,#6E40FF,#00E0FF); }
-    .cat--justice  { background: linear-gradient(135deg,#FF8A00,#FFD465); color:#111; }
-    .cat--entraide { background: linear-gradient(135deg,#2E7D6B,#63A46A); }
-    .cat--infos    { background: linear-gradient(135deg,#7E1F2E,#D14D72); }
-    .cat--ia       { background: linear-gradient(135deg,#00E0FF,#6E40FF); }
-    .cat--art      { background: linear-gradient(135deg,#D14D72,#FF8A00); }
+    .cat-card:hover{
+      transform: translateY(-4px);
+      box-shadow:
+        0 24px 60px rgba(0,0,0,.45),
+        0 0 0 1px rgba(255,255,255,.10) inset,
+        0 0 42px rgba(255,255,255,.08) inset !important;
+      clip-path: polygon(0 0, 94% 0, 100% 12%, 100% 100%, 0 100%) !important;
+    }
 
+    /* alternance du sens du dégradé pour un effet vivant */
+    .cats-grid .cat-card:nth-child(even){ animation-direction: reverse !important; }
+
+    /* variantes (couleurs Charlott’) */
+    .cat--journal  { background: var(--grad-journal) !important; }
+    .cat--justice  { background: var(--grad-justice) !important; color:#111 !important; }
+    .cat--entraide { background: var(--grad-entraide) !important; }
+    .cat--infos    { background: var(--grad-infos) !important; }
+    .cat--ia       { background: var(--grad-ia) !important; }
+    .cat--art      { background: var(--grad-art) !important; }
+
+    /* section liste / lecture */
     .post-view .cover{ width:100%; height:auto; border-radius:12px; margin:.6rem 0; }
     .back-link{ display:inline-block; margin:.2rem 0 .6rem; }
-
     .toolbar{ display:flex; flex-wrap:wrap; gap:.8rem; align-items:center; justify-content:space-between; margin: .5rem 0 1rem; }
     .search{ display:flex; gap:.5rem; align-items:center; }
     .search input{ border:1px solid rgba(255,255,255,.35); padding:.5rem .7rem; border-radius:.6rem; min-width:260px; }
     .button.is-saved{ border-color:#2E7D6B; color:#2E7D6B; }
+
+    /* animation du dégradé */
+    @keyframes cscHolo{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+    /* accessibilité : coupe l’anim si l’utilisateur préfère */
+    @media (prefers-reduced-motion: reduce){
+      .cat-card{ animation:none !important; background-size:auto !important; }
+    }
   </style>
 </head>
-<body>
+
+<body data-page="blog">
 <header class="topbar"><nav class="topbar-nav">
   <div class="brand"><img src="./assets/logo-hero.png" alt="Logo CSC"/><span>Charlott’ Street Club</span></div>
   <a class="nav" href="./index.html">Accueil</a>
@@ -80,8 +138,8 @@
   </section>
 </main>
 
+<!-- Données embarquées (zéro 404) -->
 <script>
-/* === Données embarquées (on évite tout 404 ce soir) === */
 const BLOG_DATA = {
   categories: [
     {id:"journal",  name:"Journal de Charlott Street", emoji:"📓"},
@@ -100,8 +158,10 @@ const BLOG_DATA = {
     {slug:"art-libre-affiches-70s", title:"Affiches libres (style 70’s)", excerpt:"Un kit d’affiches réutilisables.", date:"2025-10-25", author:"CSC - Studio", category:"art", tags:["affiches","assets"], cover:"./assets/cover_art.png", body:"<p>Télécharge, imprime, colle&nbsp;: des visuels libres sous licence Creative Commons. QR vers le manifeste.</p>"}
   ]
 };
+</script>
 
-/* === Script (autonome) === */
+<!-- Script autonome : tuiles → liste → lecture (+ favoris) -->
+<script>
 const state = { data: BLOG_DATA, favs: new Set(JSON.parse(localStorage.getItem('csc_blog_favs_v1')||'[]')), cat:null, q:'', showFavs:false };
 const els = { catGrid:null, postSection:null, postGrid:null, postView:null, back:null, q:null, btnFavs:null, count:null, currentCat:null };
 function saveFavs(){ localStorage.setItem('csc_blog_favs_v1', JSON.stringify([...state.favs])); }
@@ -171,9 +231,16 @@ function renderPosts(){
       </div>
     </article>`).join('') || '<div class="card">Aucun article dans cette rubrique…</div>';
 
-  els.postGrid.querySelectorAll('[data-fav]').forEach(b=>b.addEventListener('click', ()=>{ const s=b.dataset.fav; state.favs.has(s)?state.favs.delete(s):state.favs.add(s); saveFavs(); renderPosts(); }));
-  els.postGrid.querySelectorAll('[data-read]').forEach(b=>b.addEventListener('click', ()=>{ const s=b.dataset.read; const p=state.data.posts.find(x=>x.slug===s); showPost(p); }));
-  els.postGrid.querySelectorAll('[data-copy]').forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); const s=a.dataset.copy; const u=new URL(location.href); u.searchParams.set('p',s); navigator.clipboard.writeText(u.toString()); a.classList.add('pulse'); setTimeout(()=>a.classList.remove('pulse'),300); }));
+  els.postGrid.querySelectorAll('[data-fav]').forEach(b=>b.addEventListener('click', ()=>{
+    const s=b.dataset.fav; state.favs.has(s)?state.favs.delete(s):state.favs.add(s); saveFavs(); renderPosts();
+  }));
+  els.postGrid.querySelectorAll('[data-read]').forEach(b=>b.addEventListener('click', ()=>{
+    const s=b.dataset.read; const p=state.data.posts.find(x=>x.slug===s); showPost(p);
+  }));
+  els.postGrid.querySelectorAll('[data-copy]').forEach(a=>a.addEventListener('click', e=>{
+    e.preventDefault(); const s=a.dataset.copy; const u=new URL(location.href); u.searchParams.set('p',s);
+    navigator.clipboard.writeText(u.toString()); a.classList.add('pulse'); setTimeout(()=>a.classList.remove('pulse'),300);
+  }));
 }
 
 function showPost(post){
@@ -186,11 +253,14 @@ function showPost(post){
       <div class="body">${post.body||''}</div>
     </article>`;
   els.postView.classList.remove('hidden'); els.postGrid.classList.add('hidden');
-  document.getElementById('close-post').addEventListener('click', e=>{ e.preventDefault(); els.postView.classList.add('hidden'); els.postGrid.classList.remove('hidden'); });
+  document.getElementById('close-post').addEventListener('click', e=>{
+    e.preventDefault(); els.postView.classList.add('hidden'); els.postGrid.classList.remove('hidden');
+  });
 }
 
 window.addEventListener('DOMContentLoaded', init);
 </script>
 
+<!-- bouton flottant “Rejoindre l’Agora” (déjà en place dans le site) -->
 <script defer src="./js/cta.js"></script>
 </body></html>
