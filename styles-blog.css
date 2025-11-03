@@ -1,0 +1,47 @@
+/* === CSC BLOG — Tuiles rubriques : dégradés animés + néon (v2) === */
+:root{
+  --c-rose:#D14D72; --c-gold:#FFD465; --c-turq:#00E0FF; --c-orange:#FF8A00; --c-vert-2:#63A46A;
+  --grad-journal:  linear-gradient(120deg, var(--c-iris-1), var(--c-turq), var(--c-iris-3));
+  --grad-justice:  linear-gradient(120deg, var(--c-orange), var(--c-gold));
+  --grad-entraide: linear-gradient(120deg, var(--c-vert), var(--c-vert-2));
+  --grad-infos:    linear-gradient(120deg, var(--c-grenat), var(--c-rose));
+  --grad-ia:       linear-gradient(120deg, var(--c-turq), var(--c-iris-1));
+  --grad-art:      linear-gradient(120deg, var(--c-rose), var(--c-orange));
+}
+
+.cats-grid{ gap:20px; }
+
+.cat-card{
+  position:relative; overflow:hidden; cursor:pointer;
+  border-radius:24px; padding:26px; min-height:160px; text-align:left; color:#fff;
+  background: var(--grad-journal); background-size: 260% 260%; animation: cscHolo 16s linear infinite;
+  box-shadow: 0 14px 40px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.06) inset, 0 0 30px rgba(0,224,255,.12) inset;
+  clip-path: polygon(0 0, 96% 0, 100% 10%, 100% 100%, 0 100%);
+  transition: transform .18s ease, box-shadow .25s ease, clip-path .25s ease;
+}
+.cat-card .emoji{ font-size:44px; display:block; opacity:.95; text-shadow:0 4px 18px rgba(0,0,0,.35); }
+.cat-card .title{ margin-top:10px; font-weight:900; font-size:1.14rem; letter-spacing:.3px; text-shadow:0 2px 12px rgba(0,0,0,.35); }
+
+.cat-card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 24px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.10) inset, 0 0 42px rgba(255,255,255,.08) inset;
+  clip-path: polygon(0 0, 94% 0, 100% 12%, 100% 100%, 0 100%);
+}
+.cats-grid .cat-card:nth-child(even){ animation-direction: reverse; }
+
+.cat--journal  { background: var(--grad-journal); }
+.cat--justice  { background: var(--grad-justice); color:#111; }
+.cat--entraide { background: var(--grad-entraide); }
+.cat--infos    { background: var(--grad-infos); }
+.cat--ia       { background: var(--grad-ia); }
+.cat--art      { background: var(--grad-art); }
+
+@keyframes cscHolo{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .cat-card{ animation:none; background-size:auto; }
+}
